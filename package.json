@@ -1,0 +1,40 @@
+{
+  "name": "narend_backent",
+  "version": "1.0.0",
+  "description": "this project for tranport for helpind transport agent to store teire record",
+  "type": "module",
+  "main": " ./src/index.js",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config --experimental-json-modules ./src/index.js",
+    "start": "node ./src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mayurlotanbhoi/transport_backend.git"
+  },
+  "author": "mayur lotan bhoi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mayurlotanbhoi/transport_backend/issues"
+  },
+  "homepage": "https://github.com/mayurlotanbhoi/transport_backend#readme",
+  "dependencies": {
+    "axios": "^1.7.3",
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.2",
+    "mongoose-aggregate-paginate-v2": "^1.1.2",
+    "multer": "^1.4.5-lts.1",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
