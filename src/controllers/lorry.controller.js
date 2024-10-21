@@ -1,8 +1,9 @@
 import { asynchandler } from "../utils/asyncHandler.js"
 import { uploadOnCloudinary } from "../utils/cloudnaryUpload.js";
 import { ApiError } from "../utils/ApiError.js"
-import { ApiResponse } from "../utils/apiResponse.js"
+// import { ApiResponse } from "../utils/apiResponse.js"
 import { vehicaleDetails, vehicleSchema } from "../models/lorry_details.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 // import { vehicleSchema } from "../models/lorry_details.model.js";
 
 const registerVehicle = asynchandler(async (req, res) => {
