@@ -1,12 +1,12 @@
 import cluster from 'cluster'
 import { config } from 'dotenv'
-import os from 'os'
-import app from './app.js'
+// import os from 'os'
+import { app } from './app.js'
 import connectToDb from "./db/index.js"
 
 config({ path: "../.env" })
 
-const port = process.env.PORT || 80
+const port = process.env.PORT || 8000
 
 
 connectToDb().then(() => {
