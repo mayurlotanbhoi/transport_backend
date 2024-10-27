@@ -110,7 +110,11 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         }
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-        const options = { httpOnly: true, secure: process.env.NODE_ENV === "production" };
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: 'lax',
+        };
 
         return res
             .status(200)
