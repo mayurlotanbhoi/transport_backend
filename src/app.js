@@ -14,8 +14,6 @@ const allowedOrigins = [
     '*',
     'http://localhost:5173',
     'https://transporterbook.netlify.app'
-
-
 ];
 
 app.use(cors({

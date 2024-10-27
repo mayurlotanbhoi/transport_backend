@@ -128,16 +128,12 @@ const registerVehicle = asynchandler(async (req, res) => {
 
 const getAllVehicles = asynchandler(async (req, res) => {
     const { user_id } = req.user;
-
-
-
-    const vehicles = await vehicaleDetails.find({ user_id }).select('lorry_number -_id');
+    const vehicles = await vehicaleDetails.find({ user_id }).select(' -_id');
 
     // Extract the `lorry_number` fields into a single array
-    const vehicle = vehicles.map(vehicle => vehicle.lorry_number);
-
+    const vehicle_num = vehicles.map(vehicle => vehicle.lorry_number);
     return res.status(201).json(
-        new ApiResponse(200, vehicle, "Successfully")
+        new ApiResponse(200, { vehicle_num, vehicles }, "Successfully")
     );
 })
 
