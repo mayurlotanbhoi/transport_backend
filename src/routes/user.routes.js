@@ -13,7 +13,7 @@ router.route("/register").post(
     registerUser
 )
 
-router.route("/refresh-token").post(refreshAccessToken)
+
 
 
 

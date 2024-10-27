@@ -38,7 +38,7 @@ const loginUser = asynchandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
+        sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
