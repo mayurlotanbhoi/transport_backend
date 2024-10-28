@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import generateCode from '../utils/acivationCodeGanrate.js';
 import autoIncrementFactory from 'mongoose-sequence';
+import Joi from 'joi';
 
 // Initialize the auto-increment plugin with the mongoose instance
 // const autoIncrement = autoIncrementFactory(mongoose);
@@ -59,12 +60,20 @@ const userSchema = new Schema({
         required: [true, 'Logo URL is required'],
         trim: true,
     },
+    avatar: {
+        type: String,
+        required: [true, 'avatar URL is required'],
+        trim: true,
+    },
+
     address: {
         type: String,
         required: [true, 'Address is required'],
         trim: true,
     },
     city: {
+
+        _id: { type: Schema.Types.ObjectId },
         cityID: { type: Number, required: true },
         cityName: { type: String, trim: true, required: true },
         stateID: { type: Number, required: true },
@@ -87,16 +96,11 @@ const userSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    current_plan: {
+    current_plan_id: {
         type: Number,
-        enum: [1, 3, 6, 12], // 1 testing plan for 1 day
+
     },
-    activation_start_date: {
-        type: Date,
-    },
-    activation_end_date: {
-        type: Date,
-    },
+
     access_token: {
         type: String,
         default: '', // Ensure default value or constraints as needed
@@ -109,9 +113,85 @@ const userSchema = new Schema({
         type: Date,
         default: Date.now, // Sets default value to current date and time when document is created
     },
+    route: {
+        type: String,
+        required: [true, 'route required'],
+        trim: true
+    }
 }, {
     timestamps: true, // Adds createdAt and updatedAt fields automatically
 });
+
+
+
+const userValidation = Joi.object({
+    user_id: Joi.number().optional().allow(null, '').messages({
+        'number.base': 'User ID must be a number',
+    }),
+    user_type: Joi.number().valid(1, 2, 3).default(2),
+    owner_name: Joi.string().required().messages({
+        'any.required': 'Owner name is required',
+    }),
+    company_name: Joi.string().required().messages({
+        'any.required': 'Company name is required',
+    }),
+    mobile_number: Joi.string().pattern(/^\d{10}$/).required().messages({
+        'any.required': 'Mobile number is required',
+        'string.pattern.base': 'Invalid mobile number',
+    }),
+    email: Joi.string().email().required().messages({
+        'any.required': 'Email is required',
+        'string.email': 'Invalid email address',
+    }),
+    // Make fields like avatar and logo optional, as they might be set later
+    logo: Joi.string().optional().allow(null, '').messages({
+        'string.base': 'Logo URL must be a string',
+    }),
+    avatar: Joi.string().optional().allow(null, '').messages({
+        'string.base': 'Avatar URL must be a string',
+    }),
+    address: Joi.string().required().messages({
+        'any.required': 'Address is required',
+    }),
+    city: Joi.object({
+        _id: Joi.string(),
+        cityID: Joi.number().required(),
+        cityName: Joi.string().required(),
+        stateID: Joi.number().required(),
+        stateName: Joi.string().required(),
+        stateShortName: Joi.string().required(),
+        countryName: Joi.string().required(),
+        countryID: Joi.number().required(),
+    }).required().messages({
+        'any.required': 'City information is required',
+    }),
+    description: Joi.string().required().messages({
+        'any.required': 'Description is required',
+    }),
+    password: Joi.string().required().messages({
+        'any.required': 'Password is required',
+    }),
+    current_plan_id: Joi.number().optional().allow(null, '').messages({
+    }),
+    route: Joi.string()
+        .required()
+        .min(3)
+        .max(4000)
+        .messages({
+            'string.base': 'Route must be a string',
+            'string.min': 'Route must be at least 3 characters long',
+            'string.max': 'Route must be less than 4000 characters long',
+            'any.required': 'Route is required',
+        }),
+    // Other optional fields
+    access_token: Joi.string().optional().allow(null, ''),
+    refresh_token: Joi.string().optional().allow(null, ''),
+    registration_date_time: Joi.date().default(Date.now),
+});
+
+
+
+
 
 // Apply autoIncrement plugin to the user_id field
 // userSchema.plugin(autoIncrement, { inc_field: 'user_id' });
@@ -129,8 +209,7 @@ userSchema.pre('save', async function (next) {
             console.log("data", this)
 
             this.user_code = generateCode("TRS", this.user_id);
-            this.activation_start_date = this.registration_date_time;
-            this.activation_end_date = new Date(this.registration_date_time.getTime() + 15 * 24 * 60 * 60 * 1000); // 10 days later
+
         } catch (error) {
 
             return next(error); // Handle error if sequence update fails
@@ -183,5 +262,7 @@ userSchema.methods.generateRefreshToken = function () {
 
 export const User = mongoose.model('User', userSchema);
 
-
+export {
+    userValidation
+};
 

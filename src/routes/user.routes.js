@@ -9,11 +9,15 @@ export const upload = createUpload(folderName);
 const router = Router()
 
 router.route("/register").post(
-    upload.single('logo'),
+    // upload.single('logo'),
+    upload.fields([
+        { name: 'logo', maxCount: 1 },
+        { name: 'avatar', maxCount: 1 }]),
+
     registerUser
 )
 
-
+// { name: 'permit_photo', maxCount: 1 }],
 
 
 

@@ -1,3 +1,4 @@
+
 import mongoose, { Schema } from 'mongoose';
 import AutoIncrementFactory from 'mongoose-sequence';
 
@@ -6,27 +7,29 @@ const AutoIncrement = AutoIncrementFactory(mongoose);
 const planHistorySchema = new Schema({
     plan_id: {
         type: Number,
-        required: true,
+        index: true
+
     },
     user_id: {
+        type: Number,
+
+    },
+    activation_start_date: {
         type: String,
         required: true,
         trim: true,
     },
-    activationStartDate: {
+    activation_end_date: {
         type: String,
         required: true,
         trim: true,
     },
-    activationEndDate: {
+    activation_Plan: {
         type: String,
         required: true,
         trim: true,
-    },
-    activationPlan: {
-        type: String,
-        required: true,
-        trim: true,
+        enum: ['Free', 'Silver', 'Golden', 'Daimond'],
+        default: 'Free' // Optional: Set a default value if needed
     },
     amount: {
         type: Number,
