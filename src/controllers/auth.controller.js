@@ -38,7 +38,7 @@ const loginUser = asynchandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
@@ -119,11 +119,11 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         return res
             .status(200)
             .cookie("access_token", accessToken, options)
-            .cookie("refresh_token", refreshToken, options)
+            // .cookie("refresh_token", refreshToken, options)
             .json(
                 new ApiResponse(
                     200,
-                    { accessToken, refreshToken },
+                    { user: { ...user.toObject(), password: undefined }, accessToken, },
                     "Access token refreshed successfully"
                 )
             );

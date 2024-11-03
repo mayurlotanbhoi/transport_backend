@@ -19,7 +19,7 @@ const router = Router();
 router.route('/create-trip').post(authenticateToken, createTripHistory);
 
 // Get all trip histories
-router.route('/getAllTripHistories/:id').get(authenticateToken, getAllTripHistories);
+router.route('/getAllTripHistories').get(authenticateToken, getAllTripHistories);
 
 // Get a single trip history by ID
 router.route('/getTripHistoryById/:id').get(authenticateToken, getTripHistoryById);

@@ -47,7 +47,8 @@ export const createTripHistory = asynchandler(async (req, res, next) => {
 // Get all trip histories
 export const getAllTripHistories = asynchandler(async (req, res, next) => {
     try {
-        const trips = await tripHistory.find().sort({ createdAt: -1 });
+        const { user_id } = req?.user;
+        const trips = await tripHistory.find({ user_id }).sort({ createdAt: -1 });
         res.status(200).json(trips);
     } catch (err) {
         next(err);
@@ -57,7 +58,7 @@ export const getAllTripHistories = asynchandler(async (req, res, next) => {
 // Get a single trip history by ID
 export const getTripHistoryById = asynchandler(async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const { user_id: id } = req?.user;
         const trip = await tripHistory.findById(id);
         if (!trip) {
             return res.status(404).json({ error: 'Trip history not found' });
