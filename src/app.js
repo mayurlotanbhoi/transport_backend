@@ -59,6 +59,8 @@ import auth from "./routes/auth.routes.js"
 import city from "./routes/city.routes.js"
 import Vehicale from "./routes/lorry_details.routes.js"
 import Trips from "./routes/tripHistory.routes.js"
+import plance from "./routes/plan_History.routes.js"
+
 
 
 
@@ -68,6 +70,7 @@ app.use("/api/v1/auth", auth)
 app.use("/api/v1/cities", city)
 app.use("/api/v1/vehicale", Vehicale)
 app.use("/api/v1/trips", Trips)
+app.use("/api/v1/plance", plance)
 
 app.get('*', (req, res) => {
     res.status(404).json({ message: 'Not Found' });

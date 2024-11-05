@@ -5,6 +5,7 @@ import { Router } from "express";
 import {
     createTripHistory,
     deleteTripHistory,
+    downloadExelFormatAllTripHistories,
     getAllTripHistories,
     getTripHistoryById,
     updateTripHistory
@@ -30,4 +31,7 @@ router.route('/update-trip/:id').put(authenticateToken, updateTripHistory);
 // Delete a trip history by ID
 router.route('/deleteTripHistory/:id').delete(authenticateToken, deleteTripHistory);
 
+router.route('/downloadExelFormatAllTripHistories/:format').get(authenticateToken, downloadExelFormatAllTripHistories);
+
+// downloadExelFormatAllTripHistories
 export default router;

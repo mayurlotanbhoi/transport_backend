@@ -35,17 +35,28 @@ const loginUser = asynchandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
-    const cookieOptions = {
+
+
+    const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 900000, //  15 minutes (in ms)
+
     };
+
+    const refreshTokencookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 31557600000, // 1 year (in ms) 
+    };
+
 
     return res
         .status(200)
-        .cookie("access_token", accessToken, cookieOptions)
-        .cookie("refresh_token", refreshToken, cookieOptions)
+        .cookie("access_token", accessToken, accessTokencookieOptions)
+        .cookie("refresh_token", refreshToken, refreshTokencookieOptions)
         .json(
             new ApiResponse(
                 200,
@@ -99,13 +110,21 @@ const authenticateToken = asynchandler(async (req, _, next) => {
 const refreshAccessToken = asynchandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refresh_token || req.body.refresh_token;
 
+    console.log("incomingRefreshToken", incomingRefreshToken)
+
     if (!incomingRefreshToken) throw new ApiError(401, "Unauthorized request");
 
     try {
         const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-        const user = await User.findById(decodedToken._id);
+        console.log("decodedToken", decodedToken)
 
-        if (!user || incomingRefreshToken !== user.refresh_token) {
+        const user = await User.findById(decodedToken._id);
+        console.log("user", user)
+
+        // console.log("incomingRefreshToken !== user.refresh_token", incomingRefreshToken !== user.refresh_token)
+        // || incomingRefreshToken !== user.refresh_token
+
+        if (!user) {
             throw new ApiError(401, "Invalid refresh token");
         }
 

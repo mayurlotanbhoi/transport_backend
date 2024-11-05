@@ -121,7 +121,6 @@ const TripsDetailsSchema = new Schema({
 });
 
 TripsDetailsSchema.plugin(AutoIncrement, { inc_field: 'trip_id' });
-
 const tripHistory = mongoose.model('tripHistory', TripsDetailsSchema);
 
 
