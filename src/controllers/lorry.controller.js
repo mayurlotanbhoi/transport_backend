@@ -72,6 +72,7 @@ const registerVehicle = asynchandler(async (req, res) => {
     const { user_id } = req?.user
     // Check if Vehicle already exists: with Vehicle number
     const existedVehicle = await vehicaleDetails.findOne({ lorry_number, user_id });
+    console.log("existedVehicle", existedVehicle)
     if (existedVehicle) {
         throw new ApiError(409, "Vehicle with this lorry number already exists");
     }
@@ -128,7 +129,7 @@ const registerVehicle = asynchandler(async (req, res) => {
 
 const getAllVehicles = asynchandler(async (req, res) => {
     const { user_id } = req.user;
-    const vehicles = await vehicaleDetails.find({ user_id }).select(' -_id');
+    const vehicles = await vehicaleDetails.find({ user_id }).select(' -_id').sort({ _id: -1 });
 
     // Extract the `lorry_number` fields into a single array
     const vehicle_num = vehicles.map(vehicle => vehicle.lorry_number);
