@@ -73,27 +73,31 @@ export const downloadExelFormatAllTripHistories = asynchandler(async (req, res, 
         if (format === 'excel') {
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Trips');
+            // Define header row
             worksheet.columns = [
+                { header: 'Loading Date', key: 'Loading_Date', width: 20 },
                 { header: 'Vehicle Number', key: 'vehicle_number', width: 15 },
                 { header: 'Party Name', key: 'party_name', width: 20 },
-                { header: 'Party Contact', key: 'party_contact', width: 20 },
+                { header: 'Party Contact', key: 'party_contact', width: 15 },
                 { header: 'Loading City', key: 'loading_city', width: 20 },
                 { header: 'Unloading City', key: 'unloading_city', width: 20 },
-                { header: 'Freight', key: 'freight', width: 15 },
-                { header: 'Advance', key: 'advance', width: 15 },
-                { header: 'Balance', key: 'balance', width: 15 },
-                { header: 'Commission', key: 'commission', width: 15 },
-                { header: 'Driver Contact', key: 'driver_contact', width: 20 },
-                { header: 'Driver Name', key: 'driver_name', width: 20 },
-                { header: 'Distance (km)', key: 'distance_km', width: 15 },
-                { header: 'Speed (km/hr)', key: 'speed_per_hr', width: 15 },
-                { header: 'Load Goods', key: 'load_goods', width: 20 },
-                { header: 'Load Weight', key: 'load_weight', width: 15 },
-                { header: 'Payment Date', key: 'payment_date', width: 20 },
+                { header: 'Freight', key: 'freight', width: 10 },
+                { header: 'Advance', key: 'advance', width: 10 },
+                { header: 'Balance', key: 'balance', width: 10 },
+                { header: 'Commission', key: 'commission', width: 12 },
+                { header: 'Driver Contact', key: 'driver_contact', width: 15 },
+                { header: 'Driver Name', key: 'driver_name', width: 15 },
+                { header: 'Distance (km)', key: 'distance_km', width: 12 },
+                { header: 'Speed (per hr)', key: 'speed_per_hr', width: 12 },
+                { header: 'Load Goods', key: 'load_goods', width: 15 },
+                { header: 'Load Weight', key: 'load_weight', width: 12 },
+                { header: 'Payment Date', key: 'payment_date', width: 15 },
             ];
 
+            // Add data rows with conditional formatting
             trips.forEach(trip => {
-                worksheet.addRow({
+                const row = worksheet.addRow({
+                    Loading_Date: new Date(trip.createdAt).toLocaleDateString(),
                     vehicle_number: trip.vehicale_number,
                     party_name: trip.Party_name || 'N/A',
                     party_contact: trip.Party_contact || 'N/A',
@@ -111,7 +115,15 @@ export const downloadExelFormatAllTripHistories = asynchandler(async (req, res, 
                     load_weight: trip.load_weigth,
                     payment_date: trip.payment_date?.toLocaleDateString() || 'N/A',
                 });
+
+                // Apply red font to the entire row if commission is 0
+                if (trip.cumition === 0) {
+                    row.eachCell(cell => {
+                        cell.font = { color: { argb: 'FF0000' } }; // Red color for each cell in the row
+                    });
+                }
             });
+
             console.log("Sending Excel file...");
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', 'attachment; filename=trip_history.xlsx');
@@ -126,6 +138,7 @@ export const downloadExelFormatAllTripHistories = asynchandler(async (req, res, 
 
             doc.fontSize(18).text('Trip History Report', { align: 'center' }).moveDown();
             trips.forEach(trip => {
+                doc.fontSize(12).text(`Loading Date: ${new Date(trip.createdAt).toISOString()}`);
                 doc.fontSize(12).text(`Vehicle Number: ${trip.vehicale_number}`);
                 doc.text(`Party Name: ${trip.Party_name || 'N/A'}`);
                 doc.text(`Party Contact: ${trip.Party_contact || 'N/A'}`);
