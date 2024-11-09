@@ -23,19 +23,25 @@ const TripsDetailsSchema = new Schema({
         trim: true,
         index: true
     },
-    Party_name: {
-        type: String,
+    party_id: {
+        type: Number,
+        index: true,
         required: true,
-        trim: true,
     },
-    Party_contact: {
-        type: String,
-        required: [true, "Mobile number is required"],
-        trim: true,
-        match: [/^\d{10}$/, "Please enter a valid 10-digit mobile number"],
-        minlength: [10, "Mobile number must be exactly 10 digits"],
-        maxlength: [10, "Mobile number must be exactly 10 digits"],
-    },
+
+    // Party_name: {
+    //     type: String,
+    //     required: true,
+    //     trim: true,
+    // },
+    // Party_contact: {
+    //     type: String,
+    //     required: [true, "Mobile number is required"],
+    //     trim: true,
+    //     match: [/^\d{10}$/, "Please enter a valid 10-digit mobile number"],
+    //     minlength: [10, "Mobile number must be exactly 10 digits"],
+    //     maxlength: [10, "Mobile number must be exactly 10 digits"],
+    // },
 
     loading_city: {
         _id: { type: Types.ObjectId },
@@ -146,27 +152,32 @@ const tripHistoryValidation = Joi.object({
         }),
 
 
-
-    Party_name: Joi.string()
-        .required()
-        .min(3)
-        .max(40)
-        .messages({
-            'string.base': 'Party name must be a string',
-            'string.min': 'Party name must be at least 3 characters long',
-            'string.max': 'Party name must be less than 40 characters long',
-            'any.required': 'Party name is required',
-        }),
-    Party_contact: Joi.string()
-        .length(10)
-        .pattern(/^\d{10}$/)
+    party_id: Joi.number()
         .required()
         .messages({
-            'string.base': 'Party mobile number must be a string',
-            'string.length': 'Party mobile number must be exactly 10 digits',
-            'string.pattern.base': 'Party mobile number must consist of 10 digits',
-            'any.required': 'Party mobile number is required',
+            'number.base': 'Party ID must be a number',
+            'any.required': 'Party ID is required',
         }),
+    // Party_name: Joi.string()
+    //     .required()
+    //     .min(3)
+    //     .max(40)
+    //     .messages({
+    //         'string.base': 'Party name must be a string',
+    //         'string.min': 'Party name must be at least 3 characters long',
+    //         'string.max': 'Party name must be less than 40 characters long',
+    //         'any.required': 'Party name is required',
+    //     }),
+    // Party_contact: Joi.string()
+    //     .length(10)
+    //     .pattern(/^\d{10}$/)
+    //     .required()
+    //     .messages({
+    //         'string.base': 'Party mobile number must be a string',
+    //         'string.length': 'Party mobile number must be exactly 10 digits',
+    //         'string.pattern.base': 'Party mobile number must consist of 10 digits',
+    //         'any.required': 'Party mobile number is required',
+    //     }),
 
     loading_city: Joi.object({
         _id: Joi.string().optional(),

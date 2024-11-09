@@ -7,6 +7,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { asynchandler } from '../utils/asyncHandler.js';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+import { VehicaleRunningStatus } from '../utils/VehicaleRunningStatus.js';
 // import tripHistoryValidation from '../validations/tripHistoryValidation.js';
 
 // Create a new trip history
@@ -14,11 +15,44 @@ export const createTripHistory = asynchandler(async (req, res, next) => {
     //   from token data
     const { user_id } = req?.user
     req.body.user_id = user_id
+
+    const partyString = req.body?.Party || ""; // Default to an empty string if `Party` is undefined
+    const party = partyString?.split("ID =");
+    const [partyName, party_id] = party
+    req.body.party_id = party_id
+    delete req.body?.Party
+
+    console.log("partyName,party_id", partyName, party_id)
+
+    // if (match) {
+    //     const partyName = match[0].trim(); // Extracts the name part and trims whitespace
+    //     const id = parseInt(match[1], 10); // Extracts the ID as a number
+
+    //     console.log("Party Name:", partyName);
+    //     console.log("ID:", id);
+    // } else {
+    //     console.log("The format does not match or ID is missing.");
+    // }
+
+
     // Validate request body
     const { error, value } = tripHistoryValidation.validate(req.body);
     if (error) {
         throw new ApiError(400, error.details[0].message);
     }
+
+    const trip = await tripHistory.findOne({ user_id, vehicale_number: value?.vehicale_number })
+        .sort({ createdAt: -1 }); // Sort by createdAt in descending order to get the latest trip
+
+    if (trip) {
+        const { createdAt, speed_per_hr, distance_km } = trip;
+        const isVehicalRunning = VehicaleRunningStatus(createdAt, speed_per_hr, distance_km);
+
+        if (isVehicalRunning) {
+            throw new ApiError(400, "Vehicle is already on a trip");
+        }
+    }
+
 
 
     // Create and save the new trip history
@@ -46,13 +80,63 @@ export const createTripHistory = asynchandler(async (req, res, next) => {
 
 });
 
-// Get all trip histories
 export const getAllTripHistories = asynchandler(async (req, res, next) => {
     try {
-        const { user_id } = req?.user;
-        console.log('user_id', user_id);
+        const { user_id } = req.user;
+        console.log('user_id:', user_id);
 
-        const trips = await tripHistory.find({ user_id }).sort({ createdAt: -1 });
+        const trips = await tripHistory.aggregate([
+            {
+                $match: { user_id } // Match trips by user_id
+            },
+            {
+                $lookup: {
+                    from: "parties",                // Collection to join
+                    localField: "party_id",         // Field in tripHistory
+                    foreignField: "party_id",       // Field in parties (make sure both use the same field name)
+                    as: "party_info"                // Output array containing matching party details
+                }
+            },
+            {
+                $unwind: {
+                    path: "$party_info",
+                    preserveNullAndEmptyArrays: true // Include trips even if there's no matching party
+                }
+            },
+            {
+                $project: {
+                    // Fields from tripHistory
+                    vehicale_number: 1,
+                    loading_city: 1,
+                    unloading_city: 1,
+                    freigth: 1,
+                    advance: 1,
+                    balance: 1,
+                    cumition: 1,
+                    driver_contact: 1,
+                    driver_name: 1,
+                    distance_km: 1,
+                    speed_per_hr: 1,
+                    load_goods: 1,
+                    load_weigth: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    trip_id: 1,
+
+                    // Fields from party_info (joined from parties)
+                    Party_name: "$party_info.name",
+                    Party_contact: "$party_info.contact",
+                }
+            },
+            {
+                $sort: {
+                    createdAt: -1
+                }  // Sort by createdAt descending
+            }
+        ]);
+
+
+
         res.status(200).json(trips);
     } catch (err) {
         next(err);
@@ -64,7 +148,55 @@ export const downloadExelFormatAllTripHistories = asynchandler(async (req, res, 
     try {
         const { user_id } = req.user;
         const { format } = req.params;
-        const trips = await tripHistory.find({ user_id }).sort({ createdAt: -1 });
+        const trips = await tripHistory.aggregate([
+            {
+                $match: { user_id } // Match trips by user_id
+            },
+            {
+                $lookup: {
+                    from: "parties",                // Collection to join
+                    localField: "party_id",         // Field in tripHistory
+                    foreignField: "party_id",       // Field in parties (make sure both use the same field name)
+                    as: "party_info"                // Output array containing matching party details
+                }
+            },
+            {
+                $unwind: {
+                    path: "$party_info",
+                    preserveNullAndEmptyArrays: true // Include trips even if there's no matching party
+                }
+            },
+            {
+                $project: {
+                    // Fields from tripHistory
+                    vehicale_number: 1,
+                    loading_city: 1,
+                    unloading_city: 1,
+                    freigth: 1,
+                    advance: 1,
+                    balance: 1,
+                    cumition: 1,
+                    driver_contact: 1,
+                    driver_name: 1,
+                    distance_km: 1,
+                    speed_per_hr: 1,
+                    load_goods: 1,
+                    load_weigth: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    trip_id: 1,
+
+                    // Fields from party_info (joined from parties)
+                    Party_name: "$party_info.name",
+                    Party_contact: "$party_info.contact",
+                }
+            },
+            {
+                $sort: {
+                    createdAt: -1
+                }  // Sort by createdAt descending
+            }
+        ]);
 
         if (!trips || trips.length === 0) {
             return res.status(404).json({ message: 'No trip data found for the user' });
