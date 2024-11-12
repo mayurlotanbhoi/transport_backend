@@ -8,6 +8,7 @@ import { asynchandler } from '../utils/asyncHandler.js';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import { VehicaleRunningStatus } from '../utils/VehicaleRunningStatus.js';
+import { indianTime } from '../utils/indianTime.js';
 // import tripHistoryValidation from '../validations/tripHistoryValidation.js';
 
 // Create a new trip history
@@ -122,6 +123,7 @@ export const getAllTripHistories = asynchandler(async (req, res, next) => {
                     createdAt: 1,
                     updatedAt: 1,
                     trip_id: 1,
+                    full_payment: 1,
 
                     // Fields from party_info (joined from parties)
                     Party_name: "$party_info.name",
@@ -307,8 +309,9 @@ export const downloadExelFormatAllTripHistories = asynchandler(async (req, res, 
 // Get a single trip history by ID
 export const getTripHistoryById = asynchandler(async (req, res, next) => {
     try {
-        const { user_id: id } = req?.user;
-        const trip = await tripHistory.findById(id);
+        const { _id } = req?.user;
+
+        const trip = await tripHistory.findById(_id);
         if (!trip) {
             return res.status(404).json({ error: 'Trip history not found' });
         }
@@ -340,6 +343,56 @@ export const updateTripHistory = asynchandler(async (req, res, next) => {
     }
 });
 
+
+// Update a trip history Payment
+export const updateTripHistoryPayments = asynchandler(async (req, res, next) => {
+    try {
+        const { user_id } = req.user;
+        const { trip_id, full_payment, payment_date, cumition, balance } = req.body;
+
+        console.log({ trip_id, full_payment, payment_date, cumition })
+        // Validate input
+        if (!trip_id) {
+            throw new ApiError(400, "Trip ID is required.");
+        }
+
+        if (full_payment === undefined || full_payment === null) {
+            throw new ApiError(400, "Please provide the full payment amount.");
+        }
+
+        if (isNaN(full_payment)) {
+            throw new ApiError(400, "Invalid payment amount. Please enter a valid number greater than or equal to 0.");
+        }
+
+        if (payment_date === undefined || payment_date === null) {
+            throw new ApiError(400, "Please provide the payment date.");
+        }
+
+        // Update the trip payment
+        const updatedTripPayment = await tripHistory.findOneAndUpdate(
+            { user_id, trip_id }, // Match by user_id and trip_id
+            { $set: { full_payment, payment_date, cumition, balance } }, // Update the full_payment field
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedTripPayment) {
+            throw new ApiError(404, "Trip history not found for the given user and trip ID.");
+        }
+
+        // Respond with success
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                { updatedTripPayment },
+                "Trip payment updated successfully."
+            )
+        );
+    } catch (err) {
+        next(err);
+    }
+});
+
+
 // Delete a trip history by ID
 export const deleteTripHistory = asynchandler(async (req, res, next) => {
     try {
@@ -353,3 +406,4 @@ export const deleteTripHistory = asynchandler(async (req, res, next) => {
         next(err);
     }
 });
+

@@ -8,7 +8,8 @@ import {
     downloadExelFormatAllTripHistories,
     getAllTripHistories,
     getTripHistoryById,
-    updateTripHistory
+    updateTripHistory,
+    updateTripHistoryPayments
 } from '../controllers/trip.history.controller.js';
 import { authenticateToken } from '../controllers/auth.controller.js';
 
@@ -27,6 +28,11 @@ router.route('/getTripHistoryById/:id').get(authenticateToken, getTripHistoryByI
 
 // Update a trip history by ID
 router.route('/update-trip/:id').put(authenticateToken, updateTripHistory);
+
+// updateTripHistoryPayments
+router.route('/update-trip-Payments').put(authenticateToken, updateTripHistoryPayments);
+
+
 
 // Delete a trip history by ID
 router.route('/deleteTripHistory/:id').delete(authenticateToken, deleteTripHistory);

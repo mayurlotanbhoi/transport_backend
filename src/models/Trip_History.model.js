@@ -80,6 +80,10 @@ const TripsDetailsSchema = new Schema({
         type: Number,
         required: true,
     },
+    full_payment: {
+        type: Number,
+        default: 0
+    },
     payment_date: {
         type: Date,
         required: false,
@@ -305,6 +309,12 @@ const tripHistoryValidation = Joi.object({
         .messages({
             'number.base': 'Commission must be a number',
             'any.required': 'Commission is required',
+        }),
+    full_payment: Joi.number()
+        .optional().default(0)
+        .messages({
+            'number.base': 'full payment must be a number',
+
         }),
 
     payment_date: Joi.date()
