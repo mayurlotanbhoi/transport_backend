@@ -1,7 +1,7 @@
 import { User, userValidation } from "../models/user.model.js"
 import { asynchandler } from "../utils/asyncHandler.js"
 import { Mongoose } from "mongoose"
-import { uploadOnCloudinary } from "../utils/cloudnaryUpload.js"
+import { uploadOnCloudinary, uploadToCloudinary } from "../utils/cloudnaryUpload.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import Plan from "../models/plan_History.model.js"
@@ -156,12 +156,45 @@ const registerUser = asynchandler(async (req, res) => {
         throw new ApiError(409, "User with mobile number already exists");
     }
 
+    // ***********************************
     // Ensure avatar and logo files are provided
-    const logoLocalPath = req.files?.logo[0]?.path;
-    const avatarLocalPath = req.files?.avatar[0]?.path;
+    // const logoLocalPath = req.files?.logo[0]?.path;
+    // const avatarLocalPath = req.files?.avatar[0]?.path;
 
-    console.log("logoLocalPath", req.files)
-    console.log("avatarLocalPath", avatarLocalPath)
+    // console.log("logoLocalPath", req.files)
+    // console.log("avatarLocalPath", avatarLocalPath)
+
+    // if (!avatarLocalPath) {
+    //     throw new ApiError(400, "Avatar file is required");
+    // }
+    // if (!logoLocalPath) {
+    //     throw new ApiError(400, "Logo file is required");
+    // }
+
+    // // Upload images to cloud storage
+    // const logoImg = await uploadOnCloudinary(logoLocalPath);
+    // const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+    // if (!avatarLocalPath) {
+    //     throw new ApiError(400, "Avatar file is required");
+    // }
+    // if (!logoLocalPath) {
+    //     throw new ApiError(400, "Logo file is required");
+    // }
+
+    // if (!logoImg || !avatar) {
+    //     throw new ApiError(400, "Error uploading logo or avatar image");
+    // }
+    // *****************
+
+    // upload direct file start
+    // Ensure avatar and logo files are provided
+    const logoLocalPath = req.files?.logo[0].buffer;
+    const avatarLocalPath = req.files?.avatar[0].buffer;
+
+    // Upload images to cloud storage
+    const logoImg = await uploadToCloudinary(logoLocalPath);
+    const avatar = await uploadToCloudinary(avatarLocalPath);
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is required");
@@ -169,14 +202,11 @@ const registerUser = asynchandler(async (req, res) => {
     if (!logoLocalPath) {
         throw new ApiError(400, "Logo file is required");
     }
-
-    // Upload images to cloud storage
-    const logoImg = await uploadOnCloudinary(logoLocalPath);
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
-
     if (!logoImg || !avatar) {
         throw new ApiError(400, "Error uploading logo or avatar image");
     }
+    // upload direct file end
+
 
     // Parse city information
     // const cityObject = JSON.parse(city)
@@ -195,8 +225,11 @@ const registerUser = asynchandler(async (req, res) => {
         ...value,
         current_plan_id: defaultPlan?.plan_id,
         // city: cityObject,
-        logo: logoImg.url,
-        avatar: avatar.url
+        // logo: logoImg.url,
+        // avatar: avatar.url
+
+        logo: logoImg,
+        avatar: avatar
     });
     const savedUser = await newUser.save();
 

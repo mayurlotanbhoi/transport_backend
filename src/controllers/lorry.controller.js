@@ -1,5 +1,5 @@
 import { asynchandler } from "../utils/asyncHandler.js"
-import { uploadOnCloudinary } from "../utils/cloudnaryUpload.js";
+import { uploadOnCloudinary, uploadToCloudinary } from "../utils/cloudnaryUpload.js";
 import { ApiError } from "../utils/ApiError.js"
 // import { ApiResponse } from "../utils/apiResponse.js"
 import { vehicaleDetails, vehicleSchema } from "../models/lorry_details.model.js";
@@ -86,10 +86,27 @@ const registerVehicle = asynchandler(async (req, res) => {
         throw new ApiError(400, "All images (Permit, Owner, Insurance) are required");
     }
 
+
+    // *******************************
+
     // Upload images to cloudinary
-    const permitImg = await uploadOnCloudinary(permit_photo[0].path);
-    const ownerImg = await uploadOnCloudinary(owner_photo[0].path);
-    const insuranceImg = await uploadOnCloudinary(insurance_photo[0].path);
+    // const permitImg = await uploadOnCloudinary(permit_photo[0].path);
+    // const ownerImg = await uploadOnCloudinary(owner_photo[0].path);
+    // const insuranceImg = await uploadOnCloudinary(insurance_photo[0].path);
+
+    // if (!permitImg || !ownerImg || !insuranceImg) {
+    //     throw new ApiError(400, "One or more image uploads failed");
+    // }
+
+    // ****************************
+
+
+
+    // Upload images to cloud storage
+
+    const permitImg = await uploadToCloudinary(permit_photo[0].buffer);
+    const ownerImg = await uploadToCloudinary(owner_photo[0].buffer);
+    const insuranceImg = await uploadToCloudinary(insurance_photo[0].buffer);
 
     if (!permitImg || !ownerImg || !insuranceImg) {
         throw new ApiError(400, "One or more image uploads failed");
@@ -111,9 +128,13 @@ const registerVehicle = asynchandler(async (req, res) => {
         insurance_expire_date,
         fitness_expire_date,
         owner_city,
-        permit_photo: permitImg.url,
-        owner_photo: ownerImg.url,
-        insurance_photo: insuranceImg.url,
+        permit_photo: permitImg,
+        owner_photo: ownerImg,
+        insurance_photo: insuranceImg,
+
+        // permit_photo: permitImg.url,
+        // owner_photo: ownerImg.url,
+        // insurance_photo: insuranceImg.url,
     });
 
     const vehicle = await new_vehicle.save({ validateBeforeSave: true });

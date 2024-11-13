@@ -2,15 +2,19 @@ import { Router } from "express";
 import { createUpload } from "../middlewares/multerStore.middleware.js";
 import { registerUser } from "../controllers/user.controller.js";
 import { refreshAccessToken } from "../controllers/auth.controller.js";
+import multer from "multer";
 
 
 const folderName = "logos"; // Pass the folder name dynamically
 export const upload = createUpload(folderName);
 const router = Router()
 
+
+const uploadFile = multer({ storage: multer.memoryStorage() });
+
 router.route("/register").post(
     // upload.single('logo'),
-    upload.fields([
+    uploadFile.fields([
         { name: 'logo', maxCount: 1 },
         { name: 'avatar', maxCount: 1 }]),
 
