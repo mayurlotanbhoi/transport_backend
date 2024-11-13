@@ -1,7 +1,9 @@
-import { uploadOnCloudinary } from '../utils/cloudnaryUpload.js';
+import { uploadOnCloudinary, uploadToCloudinary } from '../utils/cloudnaryUpload.js';
 import { ApiError } from '../utils/ApiError.js';
 import Party, { partyValidation } from '../models/party.model.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+
+
 
 // CREATE Party
 export const createParty = async (req, res) => {
@@ -15,21 +17,29 @@ export const createParty = async (req, res) => {
         //   return res.status(400).json({ error: error.details[0].message });
 
         console.log("req.file", req.file)
-        const logoLocalPath = req.file?.path;
+        // const logoLocalPath = req.file?.path;
 
-        if (!logoLocalPath) {
-            throw new ApiError(400, "Logo file is required");
-        }
+        // if (!logoLocalPath) {
+        //     throw new ApiError(400, "Logo file is required");
+        // }
 
-        const logoImg = await uploadOnCloudinary(logoLocalPath);
-        if (!logoImg || !logoImg.url) {
-            throw new ApiError(400, "Error uploading logo image");
-        }
+
+        // const logoImg = await uploadOnCloudinary(logoLocalPath);
+        // if (!logoImg || !logoImg.url) {
+        //     throw new ApiError(400, "Error uploading logo image");
+        // }
+
+
+        // Upload file to Cloudinary
+        const logoImg = await uploadToCloudinary(req.file.buffer);
+
+        console.log("logoImg", logoImg)
+
 
         const newParty = new Party({
 
             ...value,
-            logo: logoImg.url,
+            logo: logoImg,
         });
 
         const savedParty = await newParty.save();
