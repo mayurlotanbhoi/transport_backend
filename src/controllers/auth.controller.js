@@ -66,6 +66,54 @@ const loginUser = asynchandler(async (req, res) => {
         );
 });
 
+
+const reAuth = asynchandler(async (req, res) => {
+    const userId = req.user._id;
+
+    console.log("Authenticated User ID: ", userId);
+
+    // Generate access and refresh tokens for the authenticated user
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
+
+    // Clean up the user data by removing sensitive or unnecessary information
+    const userResponse = req.user.toObject();
+    delete userResponse.password; // Exclude password
+    delete userResponse.refresh_token; // Exclude refresh token if not required
+    delete userResponse.__v; // Exclude Mongoose version key
+    delete userResponse.$__; // Exclude internal Mongoose metadata
+
+    // Options for setting the access token cookie
+    const accessTokencookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 900000, // Access token cookie valid for 15 minutes
+    };
+
+    // Options for setting the refresh token cookie
+    const refreshTokencookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 31557600000, // Refresh token cookie valid for 1 year
+    };
+
+    // Return response with access and refresh tokens in cookies and cleaned-up user data in response body
+    return res
+        .status(200)
+        .cookie("access_token", accessToken, accessTokencookieOptions)
+        .cookie("refresh_token", refreshToken, refreshTokencookieOptions) // Uncomment if you want to include refresh token
+        .json(
+            new ApiResponse(
+                200,
+                { user: userResponse, accessToken },
+                "User logged in successfully"
+            )
+        );
+});
+
+
+
 // Logout user and invalidate tokens
 const logout = asynchandler(async (req, res) => {
     const refreshToken = req.cookies.refresh_token || req.body.refresh_token;
@@ -155,7 +203,8 @@ export {
     loginUser,
     logout,
     authenticateToken,
-    refreshAccessToken
+    refreshAccessToken,
+    reAuth
 };
 
 
