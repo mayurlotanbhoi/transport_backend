@@ -40,7 +40,7 @@ const loginUser = asynchandler(async (req, res) => {
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "None",
         maxAge: 900000, //  15 minutes (in ms)
 
     };
@@ -48,7 +48,7 @@ const loginUser = asynchandler(async (req, res) => {
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "None",
         maxAge: 31557600000, // 1 year (in ms) 
     };
 
@@ -86,7 +86,7 @@ const reAuth = asynchandler(async (req, res) => {
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "None",
         maxAge: 900000, // Access token cookie valid for 15 minutes
     };
 
@@ -94,7 +94,7 @@ const reAuth = asynchandler(async (req, res) => {
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: "None",
         maxAge: 31557600000, // Refresh token cookie valid for 1 year
     };
 
@@ -156,7 +156,7 @@ const authenticateToken = asynchandler(async (req, _, next) => {
 
 // Refresh access token using refresh token
 const refreshAccessToken = asynchandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies.refresh_token || req.body.refresh_token;
+    const incomingRefreshToken = req.cookies.refresh_token || req.body.refresh_token || req.header("Authorization")?.replace("Bearer ", "");;
 
     console.log("incomingRefreshToken", incomingRefreshToken)
 
@@ -180,7 +180,7 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         const options = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: 'lax',
+            sameSite: 'None',
         };
 
         return res
