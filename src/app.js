@@ -27,7 +27,7 @@ app.use(cors({
         return callback(null, true);
     },
     credentials: true,
-    withCredentials: true
+    // withCredentials: true
 }));
 
 app.options('*', cors({
@@ -43,7 +43,14 @@ const publicDirectoryPath = path.join(process.cwd(), 'public'); // Use process.c
 app.use('/public', express.static(publicDirectoryPath)); // Adjust the base URL for serving static files
 
 // Set up session middleware
-app.use(cookieParser());
+// app.use(cookieParser());
+
+
+
+// app.use(cors({
+//     origin: ['http://localhost:5173', 'https://transporterbook.netlify.app'], // Add your frontend origins
+//     credentials: true, // Allow cookies
+// }));
 
 // Rate limiting middleware
 const limiter = rateLimit({
@@ -52,6 +59,10 @@ const limiter = rateLimit({
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use(limiter);
+
+// Use cookie-parser middleware
+// Optionally pass a secret string to enable signed cookies
+app.use(cookieParser('yourSecretKey'));
 
 // import all routs
 import user from "./routes/user.routes.js"
