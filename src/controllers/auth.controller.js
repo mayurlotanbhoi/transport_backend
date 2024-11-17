@@ -125,7 +125,7 @@ const logout = asynchandler(async (req, res) => {
 
     let decodedToken;
     try {
-        decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESHTOKEN_SECRET);
+        decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
         throw new ApiError(401, "Invalid or expired refresh token");
     }
