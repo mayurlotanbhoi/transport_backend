@@ -66,58 +66,54 @@ const loginUser = asynchandler(async (req, res) => {
 
 
 const reAuth = asynchandler(async (req, res) => {
-    const userId = req.user._id;
+    const incomingRefreshToken = req.cookies?.refreshToken
+    console.log("req.cookies", req.cookies)
 
-    // console.log()
-    console.log("req.user ", req.user);
+    console.log("incomingRefreshToken", incomingRefreshToken)
 
-    // Generate access and refresh tokens for the authenticated user
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
+    if (!incomingRefreshToken) throw new ApiError(401, "Unauthorized request");
+
+    console.log("process.env.REFRESH_TOKEN_SECRET", process.env.REFRESH_TOKEN_SECRET)
 
 
-    // Clean up the user data by removing sensitive or unnecessary information
-    const userResponse = req.user.toObject();
-    delete userResponse.password; // Exclude password
-    delete userResponse.refreshtoken; // Exclude refresh token if not required
-    delete userResponse.__v; // Exclude Mongoose version key
-    delete userResponse.$__; // Exclude internal Mongoose metadata
+    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    console.log("decodedToken", decodedToken)
 
-    // Options for setting the access token cookie
+    const user = await User.findById(decodedToken._id).select("-password -refresh_token");
+    console.log("user", user)
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    // await User.findByIdAndUpdate(user._id, { $set: { access_token: accessToken, refresh_token: refreshToken } })
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: 'None',
         path: '/',
-        maxAge: 900000, // Access token cookie valid for 15 minutes
+        maxAge: 900000, //  15 minutes (in ms)
     };
 
-    // Options for setting the refresh token cookie
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: 'None',
         path: '/',
-        maxAge: 31557600000, // Refresh token cookie valid for 1 year
+        maxAge: 31557600000, // 1 year (in ms) 
     };
 
-    // Return response with access and refresh tokens in cookies and cleaned-up user data in response body
     return res
         .status(200)
         .cookie("accessToken", accessToken, accessTokencookieOptions)
-        // .cookie("refreshToken", refreshToken, refreshTokencookieOptions) // Uncomment if you want to include refresh token
+        .cookie("refreshToken", refreshToken, refreshTokencookieOptions)
         .json(
             new ApiResponse(
                 200,
-                { user: userResponse, accessToken },
+                { user: { ...user.toObject(), password: undefined }, accessToken },
                 "User logged in successfully"
             )
         );
 });
-
-
-
 const logout = asynchandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies.refreshToken;
+    const incomingRefreshToken = req.cookies?.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new ApiError(400, "Refresh token is required");
@@ -132,11 +128,10 @@ const logout = asynchandler(async (req, res) => {
 
     console.log("decodedToken", decodedToken);
 
-
-
     const user = await User.findByIdAndUpdate(
         decodedToken._id,
-        { $set: { refreshtoken: "", accesstoken: "" } }
+        { $set: { refreshtoken: "", accesstoken: "" } },
+        { new: true } // Return the updated document
     );
 
     if (!user) {
@@ -144,25 +139,28 @@ const logout = asynchandler(async (req, res) => {
     }
 
     // Clear cookies securely
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: 'None',
+    };
 
-    return res.status(204).json(new ApiResponse(204, {}, "User logged out successfully"));
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+
+    return res.status(200).json(new ApiResponse(200, {}, "User logged out successfully"));
 });
+
 
 
 // Middleware for authenticating access tokens
 const authenticateToken = asynchandler(async (req, _, next) => {
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
-
     if (!token) throw new ApiError(401, "Unauthorized request");
-
     try {
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const user = await User.findById(decodedToken._id).select("-password -refresh_token");
-
         if (!user) throw new ApiError(401, "Invalid access token");
-
         req.user = user;
         next();
     } catch (error) {

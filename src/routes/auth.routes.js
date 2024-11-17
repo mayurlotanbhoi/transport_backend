@@ -11,7 +11,7 @@ const router = Router()
 router.route("/login").post(loginUser)
 router.route("/logout").post(logout)
 router.route("/refresh-token").post(refreshAccessToken)
-router.route("/re-auth").get(authenticateToken, reAuth)
+router.route("/re-auth").get(reAuth)
 
 
 
