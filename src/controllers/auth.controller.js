@@ -9,7 +9,11 @@ const generateAccessAndRefreshTokens = async (userId) => {
         const user = await User.findById(userId);
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
-        user.refreshtoken = refreshToken;
+        user.refresh_token = refreshToken;
+        user.access_token = accessToken;
+
+
+
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
@@ -34,7 +38,7 @@ const loginUser = asynchandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
-    await User.findByIdAndUpdate(user._id, { $set: { access_token: accessToken, refresh_token: refreshToken } })
+    // await User.findByIdAndUpdate(user._id, { $set: { access_token: accessToken, refresh_token: refreshToken } })
 
     const accessTokencookieOptions = {
         httpOnly: true,
@@ -104,7 +108,7 @@ const reAuth = asynchandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, accessTokencookieOptions)
-        .cookie("refreshToken", refreshToken, refreshTokencookieOptions) // Uncomment if you want to include refresh token
+        // .cookie("refreshToken", refreshToken, refreshTokencookieOptions) // Uncomment if you want to include refresh token
         .json(
             new ApiResponse(
                 200,
