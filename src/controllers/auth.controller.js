@@ -11,11 +11,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
         const refreshToken = user.generateRefreshToken();
         user.refresh_token = refreshToken;
         user.access_token = accessToken;
-
-
-
         await user.save({ validateBeforeSave: false });
-
         return { accessToken, refreshToken };
     } catch (error) {
         console.error("Error generating tokens:", error);
@@ -37,7 +33,6 @@ const loginUser = asynchandler(async (req, res) => {
     if (!isPasswordValid) throw new ApiError(401, "Invalid Mobile number and password");
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
     // await User.findByIdAndUpdate(user._id, { $set: { access_token: accessToken, refresh_token: refreshToken } })
 
     const accessTokencookieOptions = {
@@ -46,7 +41,6 @@ const loginUser = asynchandler(async (req, res) => {
         sameSite: 'None',
         path: '/',
         maxAge: 900000, //  15 minutes (in ms)
-
     };
 
     const refreshTokencookieOptions = {
@@ -74,10 +68,12 @@ const loginUser = asynchandler(async (req, res) => {
 const reAuth = asynchandler(async (req, res) => {
     const userId = req.user._id;
 
-    console.log("Authenticated User ID: ", userId);
+    // console.log()
+    console.log("req.user ", req.user);
 
     // Generate access and refresh tokens for the authenticated user
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
+
 
     // Clean up the user data by removing sensitive or unnecessary information
     const userResponse = req.user.toObject();
@@ -148,8 +144,8 @@ const logout = asynchandler(async (req, res) => {
     }
 
     // Clear cookies securely
-    res.clearCookie("accesstoken", { httpOnly: true, secure: true, sameSite: "Strict" });
-    res.clearCookie("refreshtoken", { httpOnly: true, secure: true, sameSite: "Strict" });
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
 
     return res.status(204).json(new ApiResponse(204, {}, "User logged out successfully"));
 });
@@ -157,13 +153,13 @@ const logout = asynchandler(async (req, res) => {
 
 // Middleware for authenticating access tokens
 const authenticateToken = asynchandler(async (req, _, next) => {
-    const token = req.cookies?.accesstoken || req.header("Authorization")?.replace("Bearer ", "");
+    const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) throw new ApiError(401, "Unauthorized request");
 
     try {
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        const user = await User.findById(decodedToken._id).select("-password -refreshtoken");
+        const user = await User.findById(decodedToken._id).select("-password -refresh_token");
 
         if (!user) throw new ApiError(401, "Invalid access token");
 
@@ -189,7 +185,7 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
         console.log("decodedToken", decodedToken)
 
-        const user = await User.findById(decodedToken._id).select("-password -refreshtoken");;
+        const user = await User.findById(decodedToken._id).select("-password ");;
         console.log("user", user)
 
         // console.log("incomingRefreshToken !== user.refreshtoken", incomingRefreshToken !== user.refreshtoken)
@@ -220,12 +216,12 @@ const refreshAccessToken = asynchandler(async (req, res) => {
 
         return res
             .status(200)
-            .cookie("accesstoken", accessToken, accessTokencookieOptions)
-            .cookie("refreshtoken", user?.refresh_token, refreshTokencookieOptions)
+            .cookie("accessToken", accessToken, accessTokencookieOptions)
+            // .cookie("refreshToken", user?.refresh_token, refreshTokencookieOptions)
             .json(
                 new ApiResponse(
                     200,
-                    { user: { ...user.toObject(), password: undefined }, accessToken, },
+                    { user: { ...user.toObject(), password: undefined, refresh_token: null }, accessToken, },
                     "Access token refreshed successfully"
                 )
             );
