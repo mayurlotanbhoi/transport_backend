@@ -117,7 +117,7 @@ const reAuth = asynchandler(async (req, res) => {
 
 
 const logout = asynchandler(async (req, res) => {
-    const incomingRefreshToken = req.cookies.refreshtoken || req.body.refreshtoken;
+    const incomingRefreshToken = req.cookies.refreshToken;
 
     if (!incomingRefreshToken) {
         throw new ApiError(400, "Refresh token is required");
