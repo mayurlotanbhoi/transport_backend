@@ -38,7 +38,7 @@ const loginUser = asynchandler(async (req, res) => {
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: 'None',
+        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
         path: '/',
         maxAge: 900000, //  15 minutes (in ms)
     };
@@ -46,7 +46,7 @@ const loginUser = asynchandler(async (req, res) => {
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: 'None',
+        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
         path: '/',
         maxAge: 31557600000, // 1 year (in ms) 
     };
@@ -58,7 +58,7 @@ const loginUser = asynchandler(async (req, res) => {
         .json(
             new ApiResponse(
                 200,
-                { user: { ...user.toObject(), password: undefined }, accessToken, refreshToken },
+                { user: { ...user.toObject(), password: undefined, refresh_token: undefined }, accessToken, refreshToken },
                 "User logged in successfully"
             )
         );
@@ -67,27 +67,24 @@ const loginUser = asynchandler(async (req, res) => {
 
 const reAuth = asynchandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken
-    console.log("req.cookies", req.cookies)
+    // console.log("req.cookies", req.cookies)
 
-    console.log("incomingRefreshToken", incomingRefreshToken)
+    // console.log("incomingRefreshToken", incomingRefreshToken)
 
     if (!incomingRefreshToken) throw new ApiError(401, "Unauthorized request");
 
-    console.log("process.env.REFRESH_TOKEN_SECRET", process.env.REFRESH_TOKEN_SECRET)
-
-
+    // console.log("process.env.REFRESH_TOKEN_SECRET", process.env.REFRESH_TOKEN_SECRET)
     const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-    console.log("decodedToken", decodedToken)
-
+    // console.log("decodedToken", decodedToken)
     const user = await User.findById(decodedToken._id).select("-password -refresh_token");
-    console.log("user", user)
+    // console.log("user", user)
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
     // await User.findByIdAndUpdate(user._id, { $set: { access_token: accessToken, refresh_token: refreshToken } })
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: 'None',
+        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
         path: '/',
         maxAge: 900000, //  15 minutes (in ms)
     };
@@ -95,7 +92,7 @@ const reAuth = asynchandler(async (req, res) => {
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: 'None',
+        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
         path: '/',
         maxAge: 31557600000, // 1 year (in ms) 
     };
@@ -142,7 +139,7 @@ const logout = asynchandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: 'None',
+        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
     };
 
     res.clearCookie("accessToken", cookieOptions);
@@ -198,7 +195,7 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         const accessTokencookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: 'None',
+            sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
             path: '/',
             maxAge: 900000, // Access token cookie valid for 15 minutes
         };
@@ -207,7 +204,7 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         const refreshTokencookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: 'None',
+            sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
             path: '/',
             maxAge: 31557600000, // Refresh token cookie valid for 1 year
         };

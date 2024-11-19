@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createUpload } from "../middlewares/multerStore.middleware.js";
-import { registerUser } from "../controllers/user.controller.js";
-import { refreshAccessToken } from "../controllers/auth.controller.js";
+import { registerUser, updateAvatar, updateLogo } from "../controllers/user.controller.js";
+import { authenticateToken, refreshAccessToken } from "../controllers/auth.controller.js";
 import multer from "multer";
 
 
@@ -20,6 +20,19 @@ router.route("/register").post(
 
     registerUser
 )
+router.route("/update-logo").patch(authenticateToken,
+    // upload.single('logo'),
+    uploadFile.single('logo'),
+    updateLogo
+)
+
+router.route("/update-avatar").patch(authenticateToken,
+    // upload.single('logo'),
+    uploadFile.single('avatar'),
+    updateAvatar
+)
+
+
 
 // { name: 'permit_photo', maxCount: 1 }],
 

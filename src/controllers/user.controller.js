@@ -251,7 +251,74 @@ const registerUser = asynchandler(async (req, res) => {
     );
 });
 
+const updateLogo = asynchandler(async (req, res) => {
+    const { _id } = req.user;
+    // Check if the logo file is provided
+    const logoLocalPath = req.file.buffer
+    if (!logoLocalPath) {
+        throw new ApiError(400, "Logo file is required");
+    }
+    // Upload the logo to Cloudinary or a similar service
+    const logoImg = await uploadToCloudinary(logoLocalPath);
+    if (!logoImg) { // Corrected the condition
+        throw new ApiError(400, "Logo uploading failed. Please try again");
+    }
+    // Update the user's logo field in the database
+    const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        { $set: { logo: logoImg } },
+        { new: true } // Return the updated document
+    ).select("-password -refresh_token");;
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+    // Send a success response
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            updatedUser,
+            "User updated successfully "
+        )
+    );
+});
+
+const updateAvatar = asynchandler(async (req, res) => {
+    const { _id } = req.user;
+    // Check if the logo file is provided
+    const AvatarPath = req.file.buffer
+    if (!AvatarPath) {
+        throw new ApiError(400, "profile file is required");
+    }
+    // Upload the logo to Cloudinary or a similar service
+    const Avatar = await uploadToCloudinary(AvatarPath);
+    if (!Avatar) { // Corrected the condition
+        throw new ApiError(400, "profile uploading failed. Please try again");
+    }
+    // Update the user's logo field in the database
+    const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        { $set: { avatar: Avatar } },
+        { new: true } // Return the updated document
+    ).select("-password -refresh_token");;
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+    // Send a success response
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            updatedUser,
+            "User updated successfully "
+        )
+    );
+});
+
+
 
 export {
-    registerUser
+    registerUser,
+    updateLogo,
+    updateAvatar
 }
