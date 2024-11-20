@@ -51,6 +51,8 @@ const loginUser = asynchandler(async (req, res) => {
         maxAge: 31557600000, // 1 year (in ms) 
     };
 
+
+    // send responce
     return res
         .status(200)
         .cookie("accessToken", accessToken, accessTokencookieOptions)
