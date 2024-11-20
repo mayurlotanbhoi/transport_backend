@@ -38,7 +38,7 @@ const loginUser = asynchandler(async (req, res) => {
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+        sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
         path: '/',
         maxAge: 900000, //  15 minutes (in ms)
     };
@@ -46,7 +46,7 @@ const loginUser = asynchandler(async (req, res) => {
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+        sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
         path: '/',
         maxAge: 31557600000, // 1 year (in ms) 
     };
@@ -84,7 +84,7 @@ const reAuth = asynchandler(async (req, res) => {
     const accessTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+        sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
         path: '/',
         maxAge: 900000, //  15 minutes (in ms)
     };
@@ -92,7 +92,7 @@ const reAuth = asynchandler(async (req, res) => {
     const refreshTokencookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+        sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
         path: '/',
         maxAge: 31557600000, // 1 year (in ms) 
     };
@@ -139,7 +139,7 @@ const logout = asynchandler(async (req, res) => {
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+        sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
     };
 
     res.clearCookie("accessToken", cookieOptions);
@@ -195,7 +195,7 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         const accessTokencookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+            sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
             path: '/',
             maxAge: 900000, // Access token cookie valid for 15 minutes
         };
@@ -204,7 +204,7 @@ const refreshAccessToken = asynchandler(async (req, res) => {
         const refreshTokencookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV ? 'Lax' : 'None',
+            sameSite: process.env.NODE_ENV ? 'None' : 'Lax',
             path: '/',
             maxAge: 31557600000, // Refresh token cookie valid for 1 year
         };
