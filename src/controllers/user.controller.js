@@ -315,10 +315,47 @@ const updateAvatar = asynchandler(async (req, res) => {
     );
 });
 
+const updateUserInfo = asynchandler(async (req, res) => {
+    const { _id } = req.user;
+    const { address, company_name, description, email, owner_name, route } = req.body
 
+    Object.entries({
+        address,
+        company_name,
+        description,
+        email,
+        owner_name,
+        route
+    }).forEach(([key, value]) => {
+        if (!value || value.trim() === "") { // Check if the value is not provided or is empty
+            throw new ApiError(404, `${key.replace('_', ' ')} is required.`);
+        }
+    });
+
+    // Update the user's logo field in the database
+    const updatedUser = await User.findByIdAndUpdate(
+        _id,
+        { $set: { address, company_name, description, email, owner_name, route } },
+        { new: true } // Return the updated document
+    ).select("-password -refresh_token");;
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+    // Send a success response
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+
+            updatedUser,
+            "User updated successfully "
+        )
+    );
+});
 
 export {
     registerUser,
     updateLogo,
-    updateAvatar
+    updateAvatar,
+    updateUserInfo
 }

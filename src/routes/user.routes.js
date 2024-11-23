@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createUpload } from "../middlewares/multerStore.middleware.js";
-import { registerUser, updateAvatar, updateLogo } from "../controllers/user.controller.js";
+import { registerUser, updateAvatar, updateLogo, updateUserInfo } from "../controllers/user.controller.js";
 import { authenticateToken, refreshAccessToken } from "../controllers/auth.controller.js";
 import multer from "multer";
 
@@ -31,6 +31,12 @@ router.route("/update-avatar").patch(authenticateToken,
     uploadFile.single('avatar'),
     updateAvatar
 )
+
+router.route("/update-user-info").put(authenticateToken, updateUserInfo)
+
+
+
+
 
 
 
